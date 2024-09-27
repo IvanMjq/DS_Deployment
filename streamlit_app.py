@@ -5,12 +5,18 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.utils import to_categorical
+from sklearn.model_selection import train_test_split
 
 st.title("Car Evaluation Predictor")
 
+data = pd.read_csv('car_cleaned.csv') 
+
+X = data.drop('class', axis=1)  # Replace 'label_column' with the actual name of your label column
+y = data['class']
+
 def create_model():
     model = Sequential([
-        Dense(64, activation='relu', input_shape=(6,)),
+        Dense(64, activation='relu', input_shape = (6,)),
         Dense(32, activation='relu'),
         Dense(16, activation='relu'),
         Dense(1, activation='sigmoid')  
@@ -20,6 +26,8 @@ def create_model():
     return model
 
 model = create_model()
+
+model.fit(X, y, epochs = 50, batch_size = 64)
 
 # Define input features
 buying_price = st.selectbox("Buying Price:", ["low", "med", "high", "vhigh"])
