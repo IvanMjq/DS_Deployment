@@ -10,10 +10,10 @@ st.title("Car Evaluation Predictor")
 
 def create_model():
     model = Sequential([
-        Dense(64, activation='relu', kernel_regularizer=l2(0.01), input_shape=(6,)),
-        Dense(32, activation='relu', kernel_regularizer=l2(0.01)),
-        Dense(16, activation='relu', kernel_regularizer=l2(0.01)),
-        Dense(1, activation='sigmoid')  # Output layer for binary classification
+        Dense(64, activation='relu', input_shape=(6,)),
+        Dense(32, activation='relu'),
+        Dense(16, activation='relu'),
+        Dense(1, activation='sigmoid')  
     ])
     
     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
@@ -47,8 +47,12 @@ def encode_input(buying, maint, doors, persons, lug_boot, safety):
     
     return input_data
 
-# Make a prediction when the user submits the input
 if st.button('Predict'):
     input_data = encode_input(buying_price, maint_cost, doors, persons, lug_boot, safety)
     prediction = model.predict(input_data)
-    st.write(f"The prediction is: {prediction[0][0]}")  # Display the prediction
+    
+    # Convert prediction to acceptable/unacceptable
+    output = "acceptable" if prediction[0][0] >= 0.5 else "unacceptable"
+    
+    st.write(f"The prediction is: {prediction[0][0]}")
+    st.write(f"The prediction is: {output}")
