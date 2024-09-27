@@ -6,6 +6,7 @@ from tensorflow.keras.layers import Dense
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
+import pandas as pd
 
 st.title("Car Evaluation Predictor")
 
