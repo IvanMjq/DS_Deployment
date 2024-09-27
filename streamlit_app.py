@@ -1,10 +1,26 @@
 import streamlit as st
-from tensorflow.keras.models import load_model
-
-model = load_model('my_ann_model.h5')
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.regularizers import l2
+from tensorflow.keras.utils import to_categorical
 
 st.title("Car Evaluation Predictor")
 
+def create_model():
+    model = Sequential([
+        Dense(64, activation='relu', kernel_regularizer=l2(0.01), input_shape=(6,)),
+        Dense(32, activation='relu', kernel_regularizer=l2(0.01)),
+        Dense(16, activation='relu', kernel_regularizer=l2(0.01)),
+        Dense(1, activation='sigmoid')  # Output layer for binary classification
+    ])
+    
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    return model
+
+model = create_model()
+
+# Define input features
 buying_price = st.selectbox("Buying Price:", ["low", "med", "high", "vhigh"])
 maint_cost = st.selectbox("Maintenance Cost:", ["low", "med", "high", "vhigh"])
 doors = st.selectbox("Number of Doors:", ["2", "3", "4", "5 or more"])
@@ -12,24 +28,26 @@ persons = st.selectbox("Seating Capacity:", ["2", "3", "4", "5 or more"])
 lug_boot = st.selectbox("Luggage Boot Size:", ["small", "med", "big"])
 safety = st.selectbox("Safety Rating:", ["low", "med", "high"])
 
-ordinal_mapping = {
-    'buying': {'low': 0, 'med': 1, 'high': 2, 'vhigh': 3},
-    'maint': {'low': 0, 'med': 1, 'high': 2, 'vhigh': 3},
-    'doors': {'2': 0, '3': 1, '4': 2, '5 or more': 3},
-    'persons': {'2': 0, '3': 1, '4': 2, '5 or more': 3},
-    'lug_boot': {'small': 0, 'med': 1, 'big': 2},
-    'safety': {'low': 0, 'med': 1, 'high': 2},
-}
+# Create a function to encode user input
+def encode_input(buying, maint, doors, persons, lug_boot, safety):
+    buying_mapping = {'low': 0, 'med': 1, 'high': 2, 'vhigh': 3}
+    maint_mapping = {'low': 0, 'med': 1, 'high': 2, 'vhigh': 3}
+    doors_mapping = {'2': 0, '3': 1, '4': 2, '5 or more': 3}
+    persons_mapping = {'2': 0, '3': 1, '4': 2, '5 or more': 3}
+    lug_boot_mapping = {'small': 0, 'med': 1, 'big': 2}
+    safety_mapping = {'low': 0, 'med': 1, 'high': 2}
 
-input_data = np.array([
-    ordinal_mapping['buying'][buying_price],
-    ordinal_mapping['maint'][maint_cost],
-    ordinal_mapping['doors'][doors],
-    ordinal_mapping['persons'][persons],
-    ordinal_mapping['lug_boot'][lug_boot],
-    ordinal_mapping['safety'][safety]
-]).reshape(1, -1)
+    input_data = np.array([[buying_mapping[buying],
+                             maint_mapping[maint],
+                             doors_mapping[doors],
+                             persons_mapping[persons],
+                             lug_boot_mapping[lug_boot],
+                             safety_mapping[safety]]])
+    
+    return input_data
 
-if st.button("Predict"):
+# Make a prediction when the user submits the input
+if st.button('Predict'):
+    input_data = encode_input(buying_price, maint_cost, doors, persons, lug_boot, safety)
     prediction = model.predict(input_data)
-    st.write(f"The predicted class is: {prediction[0][0]}")
+    st.write(f"The prediction is: {prediction[0][0]}")  # Display the prediction
